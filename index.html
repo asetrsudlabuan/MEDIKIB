@@ -12,6 +12,8 @@
   <link rel="icon" href="./assets/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./assets/icon-192.png">
   <title>MEDIKIB</title>
+  <!-- Alamat server MEDIKIB diatur di config.js (ubah file itu saja bila alamat server berganti). -->
+  <script src="./config.js"></script>
   <style>
     :root{color-scheme:dark;--night:#07151b;--panel:#10272c;--ink:#f2f8f5;--muted:#9ab0ad;--lime:#d5f36a;--mint:#90e2c4;--line:rgba(220,241,234,.15);font-synthesis:none}
     *{box-sizing:border-box}
@@ -109,7 +111,7 @@
         <div class="error-card">
           <span class="error-mark" aria-hidden="true">!</span>
           <h1>Login MEDIKIB belum terbuka</h1>
-          <p id="errorMessage">Pastikan Apps Script sudah di-deploy dengan akses yang sesuai. Anda bisa mencoba kembali atau membuka halaman login di browser.</p>
+          <p id="errorMessage">Pastikan server MEDIKIB menyala dan terhubung ke internet. Anda bisa mencoba kembali atau membuka halaman login di browser.</p>
           <div class="error-actions"><button id="retryFrame" type="button">Coba lagi</button><a id="openBrowser" target="_blank" rel="noopener">Buka login di browser</a></div>
         </div>
       </section>
@@ -126,7 +128,11 @@
 
   <script>
     (() => {
-      const APP_URL = 'https://script.google.com/macros/s/AKfycbyn9CmrE2Ejl_2nyX3YifKRlDEhplGc_KoDZPGM3kS-ivZC6Lm3f4orQkrz-Zw9hbip/exec';
+      const LEGACY_URL = 'https://script.google.com/macros/s/AKfycbyn9CmrE2Ejl_2nyX3YifKRlDEhplGc_KoDZPGM3kS-ivZC6Lm3f4orQkrz-Zw9hbip/exec';
+      const APP_URL = String(window.MEDIKIB_SERVER_URL || LEGACY_URL).trim();
+      const APP_ORIGIN = (() => { try { return new URL(APP_URL).origin; } catch (_) { return ''; } })();
+      // Tautan QR (…?kir=, ?kode=, ?b=) diteruskan ke aplikasi di dalam PWA.
+      const DEEP_LINK = ['kir', 'kode', 'b'].reduce((o, k) => { const v = new URLSearchParams(location.search).get(k); if (v) o[k] = v; return o; }, {});
       const frame = document.getElementById('appFrame');
       const launchScreen = document.getElementById('launchScreen');
       const installButton = document.getElementById('installButton');
@@ -171,7 +177,7 @@
         document.getElementById('loadingCaption').textContent = 'Login bisa dibuka langsung lewat browser.';
         document.getElementById('progressBar').style.width = '100%';
         document.getElementById('loadingPercent').textContent = '—';
-        document.getElementById('errorMessage').textContent = 'Apps Script belum memberi respons. Pastikan deployment MEDIKIB aktif dan diizinkan untuk dibuka, lalu coba lagi.';
+        document.getElementById('errorMessage').textContent = 'Server MEDIKIB belum memberi respons. Pastikan server dan tunnel menyala, lalu coba lagi.';
         document.getElementById('frameError').hidden = false;
         if (!isStandalone) installButton.hidden = false;
       }
@@ -205,6 +211,7 @@
         startLoader();
         const target = new URL(APP_URL);
         target.searchParams.set('embed', 'pwa');
+        Object.keys(DEEP_LINK).forEach(k => target.searchParams.set(k, DEEP_LINK[k]));
         if (retry) target.searchParams.set('pwa_refresh', String(Date.now()));
         frame.src = target.toString();
         frameTimeout = setTimeout(showError, 25000);
@@ -213,7 +220,7 @@
       window.addEventListener('message', event => {
         let host = '';
         try { host = new URL(event.origin).hostname; } catch (_) {}
-        if (!(host === 'script.google.com' || host.endsWith('.googleusercontent.com')) || !event.data || event.data.type !== 'MEDIKIB_EMBED_READY') return;
+        if (!(event.origin === APP_ORIGIN || host === 'script.google.com' || host.endsWith('.googleusercontent.com')) || !event.data || event.data.type !== 'MEDIKIB_EMBED_READY') return;
         hideLoader();
       });
 

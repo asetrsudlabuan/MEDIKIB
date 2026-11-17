@@ -1,4 +1,4 @@
-const CACHE_NAME = 'medikib-pwa-v10';
+const CACHE_NAME = 'medikib-pwa-v11';
 const APP_SHELL = ['./', './index.html', './manifest.webmanifest', './assets/icon.svg', './assets/icon-192.png', './assets/icon-512.png', './assets/icon-maskable.svg'];
 
 self.addEventListener('install', event => {
@@ -13,6 +13,15 @@ self.addEventListener('fetch', event => {
   const request = event.request;
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
+  // Alamat server selalu diambil terbaru agar perubahan config.js langsung berlaku.
+  if (url.pathname.endsWith('/config.js')) {
+    event.respondWith(fetch(request, { cache: 'no-store' }).then(response => {
+      const copy = response.clone();
+      caches.open(CACHE_NAME).then(cache => cache.put('./config.js', copy));
+      return response;
+    }).catch(() => caches.match('./config.js')));
+    return;
+  }
   if (request.mode === 'navigate') {
     event.respondWith(fetch(request).then(response => {
       const copy = response.clone();
