@@ -1,3 +1,4 @@
 // Alamat server MEDIKIB yang dibuka di dalam PWA.
 // Bila alamat server/tunnel berganti, ubah baris di bawah ini saja, lalu Commit di GitHub.
-window.MEDIKIB_SERVER_URL = 'https://luther-finds-correspondence-meal.trycloudflare.com/';
+window.MEDIKIB_SERVER_URL = 'https://admitted-litigation-trigger-launches.trycloudflare.com
+';
