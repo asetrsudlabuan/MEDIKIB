@@ -1,3 +1,3 @@
 // Alamat server MEDIKIB yang dibuka di dalam PWA.
 // Bila alamat server/tunnel berganti, ubah baris di bawah ini saja, lalu Commit di GitHub.
-window.MEDIKIB_SERVER_URL = 'https://lists-navigate-champions-imported.trycloudflare.com/';
+window.MEDIKIB_SERVER_URL = 'https://opportunity-expansys-latex-expansys.trycloudflare.com/';
